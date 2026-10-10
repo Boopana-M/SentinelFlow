@@ -1,6 +1,7 @@
 package com.sentinelflow.gateway.controller;
 
 import com.sentinelflow.gateway.model.BackendInstance;
+import com.sentinelflow.gateway.service.CircuitBreakerManagerService;
 import com.sentinelflow.gateway.service.LoadBalancerService;
 import com.sentinelflow.gateway.service.ProxyRoutingService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,11 +24,14 @@ public class ProxyRoutingController {
 
     private final ProxyRoutingService routingService;
     private final LoadBalancerService loadBalancerService;
+    private final CircuitBreakerManagerService circuitBreakerService;
 
     public ProxyRoutingController(ProxyRoutingService routingService,
-                                  LoadBalancerService loadBalancerService) {
+                                  LoadBalancerService loadBalancerService,
+                                  CircuitBreakerManagerService circuitBreakerService) {
         this.routingService = routingService;
         this.loadBalancerService = loadBalancerService;
+        this.circuitBreakerService = circuitBreakerService;
     }
 
     @RequestMapping(value = "/**")
@@ -60,12 +64,18 @@ public class ProxyRoutingController {
 
         try {
             HttpMethod method = HttpMethod.valueOf(request.getMethod());
-            ResponseEntity<byte[]> response = routingService.forwardRequest(
-                    instance.getBaseUrl(),
-                    upstreamPath,
+            String finalUpstreamPath = upstreamPath;
+
+            ResponseEntity<byte[]> response = circuitBreakerService.executeWithProtection(
+                    "backendService",
                     method,
-                    body,
-                    request
+                    () -> routingService.forwardRequest(
+                            instance.getBaseUrl(),
+                            finalUpstreamPath,
+                            method,
+                            body,
+                            request
+                    )
             );
 
             HttpHeaders headers = new HttpHeaders();

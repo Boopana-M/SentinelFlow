@@ -2,6 +2,7 @@ package com.sentinelflow.gateway.controller;
 
 import com.sentinelflow.gateway.model.BackendInstance;
 import com.sentinelflow.gateway.model.InstanceStatus;
+import com.sentinelflow.gateway.service.CircuitBreakerManagerService;
 import com.sentinelflow.gateway.service.LoadBalancerService;
 import com.sentinelflow.gateway.service.ProxyRoutingService;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,9 @@ class ProxyRoutingControllerTest {
     @MockBean
     private LoadBalancerService loadBalancerService;
 
+    @MockBean
+    private CircuitBreakerManagerService circuitBreakerService;
+
     @Test
     void proxyRequest_routesToHealthyBackendAndSetsHeader() throws Exception {
         BackendInstance instance = new BackendInstance("backend-1", "localhost", 8081);
@@ -44,11 +48,9 @@ class ProxyRoutingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(mockResponseBody);
 
-        given(routingService.forwardRequest(
-                eq("http://localhost:8081"),
-                eq("/health"),
+        given(circuitBreakerService.executeWithProtection(
+                eq("backendService"),
                 eq(HttpMethod.GET),
-                any(),
                 any()
         )).willReturn(mockResponse);
 
