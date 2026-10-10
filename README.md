@@ -62,7 +62,7 @@ sentinelflow/
 - [x] **Phase 11: JWT Authentication**
 - [x] **Phase 12: Authorization (RBAC & API Keys)**
 - [x] **Phase 13: Observability & Prometheus Metrics**
-- [ ] Phase 14: React Dashboard
+- [x] **Phase 14: React Dashboard**
 - [ ] Phase 15: Docker Compose Orchestration
 - [ ] Phase 16: Load Testing with k6
 - [ ] Phase 17: Fault Tolerance & Chaos Testing
