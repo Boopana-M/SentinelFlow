@@ -53,7 +53,7 @@ sentinelflow/
 - [x] **Phase 2: Basic Spring Boot Gateway**
 - [x] **Phase 3: Backend Service**
 - [x] **Phase 4: Gateway → Backend Routing**
-- [ ] Phase 5: Redis Integration
+- [x] **Phase 5: Redis Integration**
 - [ ] Phase 6: Distributed Rate Limiter
 - [ ] Phase 7: Multiple Gateway Instances
 - [ ] Phase 8: Health Monitoring
