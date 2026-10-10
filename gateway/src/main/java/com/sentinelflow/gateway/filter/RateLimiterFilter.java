@@ -77,6 +77,12 @@ public class RateLimiterFilter extends OncePerRequestFilter {
     }
 
     private String resolveClientIdentifier(HttpServletRequest request) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            return "user:" + auth.getName();
+        }
+
         String apiKey = request.getHeader("X-API-Key");
         if (StringUtils.hasText(apiKey)) {
             return "apikey:" + apiKey.trim();
@@ -99,6 +105,17 @@ public class RateLimiterFilter extends OncePerRequestFilter {
     }
 
     private RateLimitTier resolveTier(HttpServletRequest request) {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getAuthorities().isEmpty()) {
+            for (org.springframework.security.core.GrantedAuthority authority : auth.getAuthorities()) {
+                String authStr = authority.getAuthority();
+                if (authStr.startsWith("ROLE_")) {
+                    return RateLimitTier.fromRoleOrHeader(authStr.substring(5));
+                }
+            }
+        }
+
         String roleHeader = request.getHeader("X-User-Role");
         return RateLimitTier.fromRoleOrHeader(roleHeader);
     }

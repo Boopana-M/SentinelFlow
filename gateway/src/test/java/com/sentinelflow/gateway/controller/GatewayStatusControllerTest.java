@@ -14,7 +14,10 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
 @WebMvcTest(GatewayStatusController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class GatewayStatusControllerTest {
 
     @Autowired

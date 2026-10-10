@@ -59,8 +59,8 @@ sentinelflow/
 - [x] **Phase 8: Health Monitoring**
 - [x] **Phase 9: Load Balancing**
 - [x] **Phase 10: Circuit Breaker**
-- [ ] Phase 11: JWT Authentication
-- [ ] Phase 12: Authorization (RBAC)
+- [x] **Phase 11: JWT Authentication**
+- [x] **Phase 12: Authorization (RBAC & API Keys)**
 - [ ] Phase 13: Observability & Prometheus Metrics
 - [ ] Phase 14: React Dashboard
 - [ ] Phase 15: Docker Compose Orchestration
