@@ -63,7 +63,31 @@ sentinelflow/
 - [x] **Phase 12: Authorization (RBAC & API Keys)**
 - [x] **Phase 13: Observability & Prometheus Metrics**
 - [x] **Phase 14: React Dashboard**
-- [ ] Phase 15: Docker Compose Orchestration
+- [x] **Phase 15: Docker Compose Orchestration**
 - [ ] Phase 16: Load Testing with k6
 - [ ] Phase 17: Fault Tolerance & Chaos Testing
 - [ ] Phase 18: Documentation & Benchmarks
+
+---
+
+## Quick Start with Docker Compose
+Spin up the complete 11-node distributed cluster with a single command:
+```bash
+docker compose up --build
+```
+
+### Cluster Components
+| Service | Role | Internal Port | Host Port |
+| :--- | :--- | :--- | :--- |
+| `gateway-1` | Distributed API Gateway (Leader) | 8080 | 8080 |
+| `gateway-2` | Distributed API Gateway Replica | 8084 | 8084 |
+| `gateway-3` | Distributed API Gateway Replica | 8085 | 8085 |
+| `backend-1` | Upstream Microservice 1 | 8081 | 8081 |
+| `backend-2` | Upstream Microservice 2 | 8082 | 8082 |
+| `backend-3` | Upstream Microservice 3 | 8083 | 8083 |
+| `redis` | Distributed State & Rate Limiter | 6379 | 6379 |
+| `postgres` | Audit & Relational Store | 5432 | 5432 |
+| `prometheus` | Metrics Scraper & TSDB | 9090 | 9090 |
+| `grafana` | Metrics Dashboard | 3000 | 3001 |
+| `dashboard` | React Monitoring Dashboard | 80 | 3000 |
+

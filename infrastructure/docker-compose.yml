@@ -1,0 +1,255 @@
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------
+  # Data & Caching Tier
+  # -------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: sentinelflow-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sentinelflow-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sentinelflow-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sentinelflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sentinelflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sentinelflow-net
+
+  # -------------------------------------------------------------
+  # Upstream Backend Microservices (Port 8081, 8082, 8083)
+  # -------------------------------------------------------------
+  backend-1:
+    build:
+      context: ..
+      dockerfile: backend-service/Dockerfile
+    container_name: sentinelflow-backend-1
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      BACKEND_INSTANCE_ID: backend-1
+      BACKEND_INSTANCE_HOST: backend-1
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sentinelflow-net
+
+  backend-2:
+    build:
+      context: ..
+      dockerfile: backend-service/Dockerfile
+    container_name: sentinelflow-backend-2
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      BACKEND_INSTANCE_ID: backend-2
+      BACKEND_INSTANCE_HOST: backend-2
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sentinelflow-net
+
+  backend-3:
+    build:
+      context: ..
+      dockerfile: backend-service/Dockerfile
+    container_name: sentinelflow-backend-3
+    ports:
+      - "8083:8083"
+    environment:
+      PORT: 8083
+      BACKEND_INSTANCE_ID: backend-3
+      BACKEND_INSTANCE_HOST: backend-3
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sentinelflow-net
+
+  # -------------------------------------------------------------
+  # Distributed API Gateways (Port 8080, 8084, 8085)
+  # -------------------------------------------------------------
+  gateway-1:
+    build:
+      context: ..
+      dockerfile: gateway/Dockerfile
+    container_name: sentinelflow-gateway-1
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      GATEWAY_INSTANCE_ID: gateway-1
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      BACKEND_1_HOST: backend-1
+      BACKEND_1_PORT: 8081
+      BACKEND_2_HOST: backend-2
+      BACKEND_2_PORT: 8082
+      BACKEND_3_HOST: backend-3
+      BACKEND_3_PORT: 8083
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend-1:
+        condition: service_started
+      backend-2:
+        condition: service_started
+      backend-3:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sentinelflow-net
+
+  gateway-2:
+    build:
+      context: ..
+      dockerfile: gateway/Dockerfile
+    container_name: sentinelflow-gateway-2
+    ports:
+      - "8084:8084"
+    environment:
+      PORT: 8084
+      GATEWAY_INSTANCE_ID: gateway-2
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      BACKEND_1_HOST: backend-1
+      BACKEND_1_PORT: 8081
+      BACKEND_2_HOST: backend-2
+      BACKEND_2_PORT: 8082
+      BACKEND_3_HOST: backend-3
+      BACKEND_3_PORT: 8083
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend-1:
+        condition: service_started
+      backend-2:
+        condition: service_started
+      backend-3:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sentinelflow-net
+
+  gateway-3:
+    build:
+      context: ..
+      dockerfile: gateway/Dockerfile
+    container_name: sentinelflow-gateway-3
+    ports:
+      - "8085:8085"
+    environment:
+      PORT: 8085
+      GATEWAY_INSTANCE_ID: gateway-3
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      BACKEND_1_HOST: backend-1
+      BACKEND_1_PORT: 8081
+      BACKEND_2_HOST: backend-2
+      BACKEND_2_PORT: 8082
+      BACKEND_3_HOST: backend-3
+      BACKEND_3_PORT: 8083
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend-1:
+        condition: service_started
+      backend-2:
+        condition: service_started
+      backend-3:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8085/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sentinelflow-net
+
+  # -------------------------------------------------------------
+  # Observability Tier (Prometheus & Grafana)
+  # -------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.50.1
+    container_name: sentinelflow-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - sentinelflow-net
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: sentinelflow-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - sentinelflow-net
+
+  # -------------------------------------------------------------
+  # Frontend Monitoring Dashboard (Port 3000)
+  # -------------------------------------------------------------
+  dashboard:
+    build:
+      context: ..
+      dockerfile: dashboard/Dockerfile
+    container_name: sentinelflow-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway-1
+    networks:
+      - sentinelflow-net
+
+networks:
+  sentinelflow-net:
+    driver: bridge
