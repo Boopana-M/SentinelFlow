@@ -28,6 +28,7 @@ class GatewayStatusControllerTest {
         com.sentinelflow.gateway.dto.GatewayStatusResponse mockResponse =
                 new com.sentinelflow.gateway.dto.GatewayStatusResponse(
                         "sentinelflow-gateway",
+                        "gateway-1",
                         "OPERATIONAL",
                         "1.0.0-SNAPSHOT",
                         Instant.now()
@@ -39,6 +40,7 @@ class GatewayStatusControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("sentinelflow-gateway"))
+                .andExpect(jsonPath("$.instanceId").value("gateway-1"))
                 .andExpect(jsonPath("$.status").value("OPERATIONAL"))
                 .andExpect(jsonPath("$.version").value("1.0.0-SNAPSHOT"))
                 .andExpect(jsonPath("$.timestamp").exists());

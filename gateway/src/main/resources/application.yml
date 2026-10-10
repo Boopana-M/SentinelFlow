@@ -1,5 +1,8 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
+
+gateway:
+  instance-id: ${GATEWAY_INSTANCE_ID:gateway-1}
 
 spring:
   application:

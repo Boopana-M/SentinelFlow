@@ -26,7 +26,8 @@ class RequestIdFilterTest {
                 .andExpect(header().string(
                         RequestIdFilter.REQUEST_ID_HEADER,
                         matchesPattern("^[0-9a-fA-F\\-]{36}$")
-                ));
+                ))
+                .andExpect(header().string(RequestIdFilter.GATEWAY_INSTANCE_HEADER, "gateway-1"));
     }
 
     @Test

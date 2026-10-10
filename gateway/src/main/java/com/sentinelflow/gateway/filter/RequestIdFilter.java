@@ -1,5 +1,6 @@
 package com.sentinelflow.gateway.filter;
 
+import com.sentinelflow.gateway.config.GatewayProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,12 +15,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.UUID;
 
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestIdFilter extends OncePerRequestFilter {
 
     public static final String REQUEST_ID_HEADER = "X-Request-ID";
+    public static final String GATEWAY_INSTANCE_HEADER = "X-Gateway-Instance-ID";
     public static final String MDC_KEY = "requestId";
+
+    private final GatewayProperties gatewayProperties;
+
+    public RequestIdFilter(GatewayProperties gatewayProperties) {
+        this.gatewayProperties = gatewayProperties;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,6 +38,7 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
         MDC.put(MDC_KEY, requestId);
         response.setHeader(REQUEST_ID_HEADER, requestId);
+        response.setHeader(GATEWAY_INSTANCE_HEADER, gatewayProperties.getInstanceId());
 
         try {
             filterChain.doFilter(request, response);
