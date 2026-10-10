@@ -1,0 +1,10 @@
+{
+  "name": "sentinelflow-load-tests",
+  "version": "1.0.0",
+  "description": "Load tests and benchmark harness for SentinelFlow",
+  "type": "module",
+  "scripts": {
+    "test": "node run-benchmarks.mjs",
+    "bench": "node run-benchmarks.mjs"
+  }
+}

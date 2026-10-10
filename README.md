@@ -64,8 +64,8 @@ sentinelflow/
 - [x] **Phase 13: Observability & Prometheus Metrics**
 - [x] **Phase 14: React Dashboard**
 - [x] **Phase 15: Docker Compose Orchestration**
-- [ ] Phase 16: Load Testing with k6
-- [ ] Phase 17: Fault Tolerance & Chaos Testing
+- [x] **Phase 16: Load Testing with k6**
+- [x] **Phase 17: Fault Tolerance & Chaos Testing**
 - [ ] Phase 18: Documentation & Benchmarks
 
 ---
