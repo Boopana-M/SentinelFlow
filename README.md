@@ -66,9 +66,15 @@ sentinelflow/
 - [x] **Phase 15: Docker Compose Orchestration**
 - [x] **Phase 16: Load Testing with k6**
 - [x] **Phase 17: Fault Tolerance & Chaos Testing**
-- [ ] Phase 18: Documentation & Benchmarks
+- [x] **Phase 18: Documentation & Benchmarks**
 
 ---
+
+## Technical Documentation
+- 🏛️ [**System Architecture & Flow Pipeline**](file:///d:/SentinelFlow/docs/architecture.md)
+- 📋 [**REST API Specifications & Endpoints**](file:///d:/SentinelFlow/docs/api-specification.md)
+- 📊 [**Benchmarking & Performance Analysis**](file:///d:/SentinelFlow/docs/benchmarks.md)
+- 🚀 [**Deployment & Operations Guide**](file:///d:/SentinelFlow/docs/deployment.md)
 
 ## Quick Start with Docker Compose
 Spin up the complete 11-node distributed cluster with a single command:
