@@ -1,6 +1,8 @@
 package com.sentinelflow.gateway.controller;
 
-import com.sentinelflow.gateway.config.GatewayRoutingProperties;
+import com.sentinelflow.gateway.model.BackendInstance;
+import com.sentinelflow.gateway.model.InstanceStatus;
+import com.sentinelflow.gateway.service.LoadBalancerService;
 import com.sentinelflow.gateway.service.ProxyRoutingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +13,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProxyRoutingController.class)
 class ProxyRoutingControllerTest {
@@ -28,17 +31,18 @@ class ProxyRoutingControllerTest {
     private ProxyRoutingService routingService;
 
     @MockBean
-    private GatewayRoutingProperties routingProperties;
+    private LoadBalancerService loadBalancerService;
 
     @Test
-    void proxyRequest_forwardsToBackendAndReturnsResponse() throws Exception {
+    void proxyRequest_routesToHealthyBackendAndSetsHeader() throws Exception {
+        BackendInstance instance = new BackendInstance("backend-1", "localhost", 8081);
+        instance.setStatus(InstanceStatus.UP);
+        given(loadBalancerService.selectInstance()).willReturn(Optional.of(instance));
+
         byte[] mockResponseBody = "{\"status\":\"UP\"}".getBytes();
         ResponseEntity<byte[]> mockResponse = ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(mockResponseBody);
-
-        given(routingProperties.getDefaultBackends())
-                .willReturn(java.util.List.of("http://localhost:8081"));
 
         given(routingService.forwardRequest(
                 eq("http://localhost:8081"),
@@ -50,6 +54,17 @@ class ProxyRoutingControllerTest {
 
         mockMvc.perform(get("/api/v1/proxy/health"))
                 .andExpect(status().isOk())
+                .andExpect(header().string(ProxyRoutingController.BACKEND_INSTANCE_HEADER, "backend-1"))
                 .andExpect(content().json("{\"status\":\"UP\"}"));
+    }
+
+    @Test
+    void proxyRequest_whenNoHealthyBackends_returns503ServiceUnavailable() throws Exception {
+        given(loadBalancerService.selectInstance()).willReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/v1/proxy/health"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.error").value("Service Unavailable"))
+                .andExpect(jsonPath("$.message").value("No healthy backend instances available"));
     }
 }
