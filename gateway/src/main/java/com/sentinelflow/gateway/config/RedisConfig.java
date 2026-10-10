@@ -32,4 +32,13 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+
+    @Bean
+    public org.springframework.data.redis.core.script.RedisScript<java.util.List> tokenBucketScript() {
+        org.springframework.data.redis.core.script.DefaultRedisScript<java.util.List> script =
+                new org.springframework.data.redis.core.script.DefaultRedisScript<>();
+        script.setLocation(new org.springframework.core.io.ClassPathResource("scripts/token_bucket.lua"));
+        script.setResultType(java.util.List.class);
+        return script;
+    }
 }
