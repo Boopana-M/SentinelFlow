@@ -29,6 +29,7 @@
 
     <modules>
         <module>gateway</module>
+        <module>backend-service</module>
     </modules>
 
     <dependencyManagement>

@@ -1,0 +1,12 @@
+server:
+  port: ${PORT:8081}
+
+backend:
+  instance-id: ${BACKEND_INSTANCE_ID:backend-1}
+  instance-host: ${BACKEND_INSTANCE_HOST:localhost}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

@@ -51,7 +51,7 @@ sentinelflow/
 ## Development Phases
 - [x] **Phase 1: Project Setup & Repository Scaffolding**
 - [x] **Phase 2: Basic Spring Boot Gateway**
-- [ ] Phase 3: Backend Service
+- [x] **Phase 3: Backend Service**
 - [ ] Phase 4: Gateway → Backend Routing
 - [ ] Phase 5: Redis Integration
 - [ ] Phase 6: Distributed Rate Limiter
