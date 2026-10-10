@@ -28,7 +28,7 @@
     </properties>
 
     <modules>
-        <!-- Modules will be enabled as they are scaffolded -->
+        <module>gateway</module>
     </modules>
 
     <dependencyManagement>
