@@ -28,11 +28,14 @@ public class RateLimiterFilter extends OncePerRequestFilter {
 
     private final DistributedRateLimiterService rateLimiterService;
     private final ObjectMapper objectMapper;
+    private final com.sentinelflow.gateway.service.GatewayMetricsService metricsService;
 
     public RateLimiterFilter(DistributedRateLimiterService rateLimiterService,
-                             ObjectMapper objectMapper) {
+                             ObjectMapper objectMapper,
+                             com.sentinelflow.gateway.service.GatewayMetricsService metricsService) {
         this.rateLimiterService = rateLimiterService;
         this.objectMapper = objectMapper;
+        this.metricsService = metricsService;
     }
 
     @Override
@@ -57,6 +60,9 @@ public class RateLimiterFilter extends OncePerRequestFilter {
         response.setHeader(HEADER_RESET, String.valueOf(result.resetSeconds()));
 
         if (!result.allowed()) {
+            if (metricsService != null) {
+                metricsService.recordRateLimitBlocked(tier.name());
+            }
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setHeader(HEADER_RETRY_AFTER, String.valueOf(result.retryAfterSeconds()));
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -71,6 +77,10 @@ public class RateLimiterFilter extends OncePerRequestFilter {
 
             objectMapper.writeValue(response.getOutputStream(), errorBody);
             return;
+        }
+
+        if (metricsService != null) {
+            metricsService.recordRateLimitAllowed(tier.name());
         }
 
         filterChain.doFilter(request, response);

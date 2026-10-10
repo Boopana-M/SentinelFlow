@@ -22,14 +22,16 @@ import static org.mockito.Mockito.verify;
 class RateLimiterFilterTest {
 
     private DistributedRateLimiterService rateLimiterService;
+    private com.sentinelflow.gateway.service.GatewayMetricsService metricsService;
     private RateLimiterFilter filter;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         rateLimiterService = mock(DistributedRateLimiterService.class);
+        metricsService = mock(com.sentinelflow.gateway.service.GatewayMetricsService.class);
         objectMapper = new ObjectMapper();
-        filter = new RateLimiterFilter(rateLimiterService, objectMapper);
+        filter = new RateLimiterFilter(rateLimiterService, objectMapper, metricsService);
     }
 
     @Test
