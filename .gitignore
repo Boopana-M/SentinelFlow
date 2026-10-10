@@ -1,0 +1,31 @@
+# Word Documents / Specifications
+*.docx
+SentinelFlow_AGENTS.docx
+
+# Build and Dependencies
+target/
+node_modules/
+dist/
+build/
+
+# IDE / Editor files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment & Secrets
+.env
+*.local
+
+# Logs
+*.log
+logs/
+
+# OS Files
+.DS_Store
+Thumbs.db
